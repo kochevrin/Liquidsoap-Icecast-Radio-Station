@@ -1,0 +1,45 @@
+# Environment variables with passwords
+.env
+
+# Generated config files (use templates instead)
+icecast/icecast.xml
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+
+# Music files (keep directory structure only)
+liquidsoap/music/ads/*.mp3
+liquidsoap/music/ads/*.wav
+liquidsoap/music/ads/*.flac
+liquidsoap/music/ads/*.ogg
+liquidsoap/music/default/*.mp3
+liquidsoap/music/default/*.wav
+liquidsoap/music/default/*.flac
+liquidsoap/music/default/*.ogg
+liquidsoap/music/*.mp3
+liquidsoap/music/*.wav
+liquidsoap/music/*.flac
+liquidsoap/music/*.ogg
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

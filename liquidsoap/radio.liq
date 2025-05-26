@@ -1,0 +1,93 @@
+#!/usr/bin/liquidsoap
+
+# Enable logging
+set("log.stdout", true)
+set("log.level", 3)
+
+# Add FFmpeg decoder settings
+set("decoder.ffmpeg.metadata.export", true)
+set("decoder.ffmpeg.buffer.length", 0.5)
+set("decoder.ffmpeg.analyze_duration", 10000000)
+
+# Add buffer and decoder settings
+set("frame.audio.size", 2048)
+set("decoder.buffer.size", 32768)
+set("root.max_latency", 60.)
+
+# Define playlists with fallback
+default = playlist(
+    "/app/music/default/",
+    mode="random",
+    reload=3600,
+    reload_mode="rounds"
+)
+
+ads = playlist(
+    "/app/music/ads/",
+    mode="random",
+    reload=3600,
+    reload_mode="rounds"
+)
+
+silentminute = single(
+    "/app/music/SilentMinute.mp3"
+)
+
+# Make playlists safe and log their states
+default = mksafe(default)
+default.on_track(fun(m) -> begin
+    filename = string.extract(pattern='[^/]*$', m["filename"])
+    log("Now playing default: #{filename}")
+end)
+
+ads = mksafe(ads)
+ads.on_track(fun(m) -> begin
+    filename = string.extract(pattern='[^/]*$', m["filename"])
+    log("Now playing ad: #{filename}")
+end)
+
+silentminute = mksafe(silentminute)
+silentminute.on_track(fun(m) -> begin
+    filename = string.extract(pattern='[^/]*$', m["filename"])
+    log("Now playing silentminute: #{filename}")
+end)
+
+# Add time logging function
+def log_time() = 
+    time = time.local()
+    log("Current time check - Hour: #{time.hour}, Minute: #{time.min}")
+end
+
+# Schedule logging every minute
+thread.run(every=60., {log_time()})
+
+# First create the switch for ads that interrupts default
+# This ensures ads play every 15 minutes
+radio_with_ads = switch(track_sensitive=true, [
+    ({0m-2m or 15m-17m or 30m-32m or 45m-47m}, ads),
+    ({true}, default)
+])
+
+# Then add silentminute with track_sensitive=false as specified
+radio = switch(track_sensitive=false, [
+    ({9h00m00s-9h03m18s}, silentminute),
+    ({true}, radio_with_ads)
+])
+
+# Add a fallback silence in case all sources fail
+radio = fallback(track_sensitive=false, [radio, blank(duration=5.)])
+
+# Get Icecast password from environment
+icecast_password = getenv("ICECAST_SOURCE_PASSWORD")
+
+# Stream output to Icecast
+output.icecast(
+    %mp3(bitrate=128),
+    host="icecast",
+    port=8000,
+    password=icecast_password,
+    mount="stream",
+    name="Scheduled Radio",
+    description="Radio with scheduled programming",
+    fallible=false,
+    radio)

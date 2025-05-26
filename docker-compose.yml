@@ -1,0 +1,28 @@
+services:
+  icecast:
+    image: ${ICECAST_IMAGE}
+    container_name: icecast
+    ports:
+      - "${ICECAST_EXTERNAL_PORT}:${ICECAST_INTERNAL_PORT}"
+    environment:
+      - ICECAST_ADMIN_PASSWORD=${ICECAST_ADMIN_PASSWORD}
+      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD}
+      - ICECAST_RELAY_PASSWORD=${ICECAST_RELAY_PASSWORD}
+      - ICECAST_ADMIN_USERNAME=${ICECAST_ADMIN_USERNAME}
+    volumes:
+      - ./icecast/icecast.xml:/etc/icecast2/icecast.xml
+
+  liquidsoap:
+    image: ${LIQUIDSOAP_IMAGE}
+    container_name: liquidsoap
+    depends_on:
+      - icecast
+    environment:
+      - TZ=${TIMEZONE}
+      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD}
+    volumes:
+      - ./liquidsoap/radio.liq:/app/radio.liq
+      - ./liquidsoap/music:/app/music
+    working_dir: /app
+    command: liquidsoap radio.liq
+    restart: unless-stopped
