@@ -62,9 +62,9 @@ end
 thread.run(every=60., {log_time()})
 
 # First create the switch for ads that interrupts default
-# This ensures ads play every 15 minutes
+# This ensures ads play every 10 minutes
 radio_with_ads = switch(track_sensitive=true, [
-    ({0m-2m or 15m-17m or 30m-32m or 45m-47m}, ads),
+    ({0m-1m or 10m-11m or 20m-21m or 30m-31m or 40m-41m or 50m-51m}, ads),
     ({true}, default)
 ])
 

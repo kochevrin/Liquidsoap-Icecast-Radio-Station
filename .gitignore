@@ -23,6 +23,7 @@ liquidsoap/music/*.mp3
 liquidsoap/music/*.wav
 liquidsoap/music/*.flac
 liquidsoap/music/*.ogg
+old_music/
 
 # Temporary files
 *.tmp
